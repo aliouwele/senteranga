@@ -7,6 +7,13 @@ from odoo.exceptions import ValidationError, RedirectWarning, UserError
 class ProductTemplate(models.Model):
     _inherit = "product.template"
     
+    @api.depends('list_price', 'standard_price')
+    def _compute_marge(self):
+        marge = 0
+        for record in self:
+            marge = record.list_price - record.standard_price
+            record.marge = marge if marge > 0 else 0 
+    
     list_price = fields.Float(
         'Sales Price', default=1.0,
         digits='Product Price', required=True,
@@ -26,13 +33,27 @@ class ProductTemplate(models.Model):
         'product.supplierinfo', 'product_tmpl_id', 
         required=True, string='Vendors', 
         help="Define vendor pricelists.")
+    marge = fields.Float('Marge', compute='_compute_marge')
     
     @api.model
     def create(self, vals):
         if not vals.get('seller_ids'):
-            raise UserError(_(
-                'Vous devez ajouter un fournisseur. '))
+            raise UserError(_('Vous devez ajouter un fournisseur. '))
+        if vals.get('standard_price') <= 0:
+            raise UserError(_('Vous devez renseigner le coût.'))
+        if vals.get('list_price') <= 0:
+            raise UserError(_('Vous devez renseigner le prix de vente.'))
         return super(ProductTemplate, self).create(vals)
+    
+    def write(self, vals):
+        res = super(ProductTemplate, self).write(vals)
+        if not self.seller_ids:
+            raise UserError(_('Vous devez ajouter un fournisseur. '))
+        if self.standard_price <= 0:
+            raise UserError(_('Vous devez renseigner le coût.'))
+        if self.list_price <= 0:
+            raise UserError(_('Vous devez renseigner le prix de vente.'))
+        return res
 
 
 class PurchaseOrder(models.Model):
