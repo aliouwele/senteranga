@@ -27,7 +27,7 @@
     'data': [
         # 'security/ir.model.access.csv',
         'views/views.xml',
-        'views/pos_assets_common.xml',
+        #'views/pos_assets_common.xml',
         'data/template_mail.xml',
     ],
     # only loaded in demonstration mode
