@@ -2,6 +2,44 @@
 
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError, RedirectWarning, UserError
+import json
+
+class PosOrder(models.Model):
+    _inherit = "pos.order"
+    
+    @api.model
+    def _payment_fields(self, order, ui_paymentline):
+        return {
+            'amount': ui_paymentline['amount'] or 0.0,
+            'payment_date': ui_paymentline['name'],
+            'payment_method_id': ui_paymentline['payment_method_id'],
+            'card_type': ui_paymentline.get('card_type'),
+            'cardholder_name': ui_paymentline.get('cardholder_name'),
+            'transaction_id': ui_paymentline.get('transaction_id'),
+            'payment_status': ui_paymentline.get('payment_status'),
+            'transaction_number': "TRA00111",
+            'pos_order_id': order.id,
+        }
+
+class AccountMove(models.Model):
+    _inherit = "pos.payment"
+
+    transaction_number = fields.Char(string="Numéro de transaction",store=True)
+
+class AccountMove(models.Model):
+    _inherit = "account.move"
+
+    vals = fields.Char(store=True)
+
+    def write(self, vals):
+        # print(str(json.dumps(vals)))
+        res = super(AccountMove, self).write(vals)
+        if 'vals' not in vals:
+            self.vals = json.dumps(vals)
+            template = self.env.ref('senteranga.email_template_account_move_alert')
+            self.env['mail.template'].browse(template.id).sudo().send_mail(self.id, force_send=True)    
+        return res
+
 
 
 class ProductTemplate(models.Model):
