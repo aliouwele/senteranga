@@ -1,0 +1,31 @@
+<odoo>
+  <data>
+    <!-- explicit list view definition -->
+      <record id="product_product_template_form_view_inherit" model="ir.ui.view">
+          <field name="name">product.template.common.form.inherit</field>
+              <field name="model">product.template</field>
+              <field name="inherit_id" ref="product.product_template_form_view"/>
+              <field name="arch" type="xml">
+                  <field name="company_id" position="after">
+                      <field 
+                            name="marge" 
+                            widget='monetary' 
+                            options="{'currency_field': 'cost_currency_id', 'field_digits': True}"/>
+                  </field>
+              </field>
+      </record>
+      <record id="product_product_template_tree_view_inherit" model="ir.ui.view">
+          <field name="name">product.template.common.tree.inherit</field>
+              <field name="model">product.template</field>
+              <field name="inherit_id" ref="product.product_template_tree_view"/>
+              <field name="arch" type="xml">
+                  <field name="standard_price" position="after">
+                      <field 
+                            name="marge" 
+                            widget='monetary' 
+                            options="{'currency_field': 'cost_currency_id', 'field_digits': True}"/>
+                  </field>
+              </field>
+      </record>
+  </data>
+</odoo>
